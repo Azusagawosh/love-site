@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Я тебя люблю ❤️</title>
+    <style>
+        /* ===== ОБЩИЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a0a1e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px 0 60px 0;
+        }
+
+        /* ===== ЭКРАН 1: ПРИЗНАНИЕ ===== */
+        #screen1 {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            position: relative;
+            transition: opacity 1s ease;
+            z-index: 10;
+        }
+        #screen1.hidden {
+            display: none;
+        }
+
+        .heart-emoji {
+            font-size: 80px;
+            animation: pulse 1.5s ease-in-out infinite;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        .heart-emoji:active {
+            transform: scale(0.8);
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        #clickHint {
+            color: #ff99cc;
+            font-size: 18px;
+            margin-top: 25px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.2; }
+        }
+
+        #burstContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            overflow: hidden;
+        }
+        .burst-heart {
+            position: absolute;
+            font-size: 30px;
+            animation: flyOut 1.8s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes flyOut {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg); opacity: 0; }
+        }
+
+        #loveMessage {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease;
+        }
+        #loveMessage.show {
+            display: flex;
+        }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #loveMessage h1 {
+            color: #ff4d7a;
+            font-size: 42px;
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(255, 77, 122, 0.5);
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        #loveMessage .photo-container {
+            width: 100%;
+            max-width: 360px;
+            margin: 20px auto;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 77, 122, 0.3);
+            border: 3px solid #ff4d7a;
+        }
+        #loveMessage .photo-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #loveMessage .sub-text {
+            color: #ffb3d1;
+            font-size: 18px;
+            margin-top: 10px;
+            font-weight: 300;
+            text-align: center;
+        }
+
+        .btn-to-reasons {
+            margin-top: 25px;
+            background: transparent;
+            border: 2px solid #ff4d7a;
+            color: #ff4d7a;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+        .btn-to-reasons:hover {
+            background: #ff4d7a;
+            color: #fff;
+        }
+
+        /* ==============================================================
+               ЭКРАН 2: ГЕНЕРАТОР КОМПЛИМЕНТОВ + 100 ПРИЧИН
+               ============================================================== */
+        #screen2 {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px 24px 80px 24px;
+            display: none;
+            z-index: 5;
+            animation: fadeInUp 1s ease;
+        }
+        #screen2.show {
+            display: block;
+        }
+
+        /* ---- Блок комплиментов ---- */
+        .compliment-block {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border-radius: 30px;
+            padding: 30px 25px 35px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 77, 122, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .compliment-block h2 {
+            color: #ffb3d1;
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        #complimentDisplay {
+            color: #fff;
+            font-size: 22px;
+            line-height: 1.7;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+            font-weight: 300;
+            transition: opacity 0.5s ease;
+        }
+        #complimentDisplay.fade {
+            opacity: 0;
+        }
+
+        .compliment-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .compliment-actions button {
+            background: rgba(255, 77, 122, 0.15);
+            border: 1px solid rgba(255, 77, 122, 0.3);
+            color: #ffb3d1;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .compliment-actions button:hover {
+            background: #ff4d7a;
+            color: #fff;
+            border-color: #ff4d7a;
+            transform: scale(1.02);
+        }
+        .compliment-actions button:active {
+            transform: scale(0.95);
+        }
+
+        #emailNotification {
+            color: #66bb6a;
+            font-size: 14px;
+            margin-top: 12px;
+            min-height: 24px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        #emailNotification.show {
+            opacity: 1;
+        }
+
+        /* ---- Разделитель ---- */
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff4d7a, transparent);
+            margin: 10px auto 35px;
+        }
+
+        /* ---- 100 причин ---- */
+        #screen2 h2 {
+            color: #ff4d7a;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        #screen2 .subhead {
+            text-align: center;
+            color: #ffb3d1;
+            font-weight: 300;
+            margin-bottom: 35px;
+            font-size: 15px;
+        }
+
+        .reason-item {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(4px);
+            padding: 14px 20px;
+            margin-bottom: 10px;
+            border-radius: 16px;
+            color: #f0d6e8;
+            font-size: 16px;
+            line-height: 1.5;
+            border-left: 4px solid #ff4d7a;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideIn 0.5s ease forwards;
+            transition: background 0.2s;
+        }
+        .reason-item:hover {
+            background: rgba(255, 77, 122, 0.15);
+        }
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateX(-20px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        .reason-item span {
+            color: #ff4d7a;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        #loadMoreBtn {
+            display: block;
+            margin: 30px auto 0;
+            background: #ff4d7a;
+            color: #fff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 25px rgba(255, 77, 122, 0.3);
+        }
+        #loadMoreBtn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 12px 35px rgba(255, 77, 122, 0.5);
+        }
+        #loadMoreBtn:disabled {
+            opacity: 0.4;
+            cursor: default;
+            transform: none;
+        }
+
+        /* ---- Фоновые сердечки ---- */
+        .floating-heart {
+            position: fixed;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: floatUp 8s linear infinite;
+            z-index: 1;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0.2; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ---- Адаптивность ---- */
+        @media (max-width: 500px) {
+            #loveMessage h1 { font-size: 30px; }
+            .reason-item { font-size: 14px; padding: 12px 16px; }
+            #screen2 h2 { font-size: 26px; }
+            #complimentDisplay { font-size: 19px; }
+            .compliment-actions button { padding: 8px 16px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Фоновые плавающие сердечки -->
+    <div id="floatingHearts"></div>
+
+    <!-- Контейнер для взрыва сердечек -->
+    <div id="burstContainer"></div>
+
+    <!-- ============================================================
+    ЭКРАН 1: Признание
+    ============================================================ -->
+    <div id="screen1">
+        <div class="heart-emoji" id="bigHeart">❤️</div>
+        <div id="clickHint">нажми на сердце</div>
+
+        <div id="loveMessage">
+            <h1>Я ТЕБЯ ЛЮБОЖАЮ ❤️</h1>
+            <div class="photo-container">
+                <img src="https://i.ibb.co.com/TBjYhprx/photo-2026-06-21-16-30-57.jpg" alt="Наше совместное фото">
+            </div>
+            <p class="sub-text">ты — моя вселенная ✨</p>
+            <button class="btn-to-reasons" id="goToReasonsBtn">✨ Комплименты и причины →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    ЭКРАН 2: Генератор комплиментов + 100 причин
+    ============================================================ -->
+    <div id="screen2">
+
+        <!-- Блок комплиментов -->
+        <div class="compliment-block">
+            <h2>🌟 Комплимент дня</h2>
+            <div id="complimentDisplay">💫 нажми «Новый комплимент»</div>
+            <div class="compliment-actions">
+                <button id="newComplimentBtn">💖 Новый комплимент</button>
+                <button id="saveComplimentBtn">📩 Отправить себе на почту</button>
+            </div>
+            <div id="emailNotification"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 100 причин -->
+        <h2>100 причин ❤️</h2>
+        <p class="subhead">почему я люблю тебя</p>
+        <div id="reasonsList"></div>
+        <button id="loadMoreBtn">Показать ещё 10</button>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. ВЗРЫВ СЕРДЕЧЕК
+        // ============================================================
+        const bigHeart = document.getElementById('bigHeart');
+        const burstContainer = document.getElementById('burstContainer');
+        const loveMessage = document.getElementById('loveMessage');
+        const screen1 = document.getElementById('screen1');
+        const screen2 = document.getElementById('screen2');
+        const clickHint = document.getElementById('clickHint');
+        let isBurst = false;
+
+        bigHeart.addEventListener('click', function(e) {
+            if (isBurst) return;
+            isBurst = true;
+
+            const rect = bigHeart.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            const emojis = ['❤️', '💖', '💗', '♥️', '❤️‍🔥', '💝', '💘'];
+            for (let i = 0; i < 60; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'burst-heart';
+                heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                heart.style.left = cx + 'px';
+                heart.style.top = cy + 'px';
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = 80 + Math.random() * 300;
+                heart.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+                heart.style.setProperty('--ty', Math.sin(angle) * distance - 100 + 'px');
+                heart.style.fontSize = (20 + Math.random() * 40) + 'px';
+                burstContainer.appendChild(heart);
+                setTimeout(() => heart.remove(), 2000);
+            }
+
+            bigHeart.style.display = 'none';
+            clickHint.style.display = 'none';
+            setTimeout(() => {
+                loveMessage.classList.add('show');
+            }, 400);
+        });
+
+        // ============================================================
+        // 2. ПЕРЕХОД НА ЭКРАН 2
+        // ============================================================
+        document.getElementById('goToReasonsBtn').addEventListener('click', function() {
+            screen1.style.opacity = '0';
+            setTimeout(() => {
+                screen1.classList.add('hidden');
+                screen2.classList.add('show');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (!firstComplimentShown) {
+                    showRandomCompliment();
+                    firstComplimentShown = true;
+                }
+            }, 500);
+        });
+
+        // ============================================================
+        // 3. ГЕНЕРАТОР КОМПЛИМЕНТОВ + EMAILJS
+        // ============================================================
+        const compliments = [
+            "Твоя улыбка — мой самый любимый рассвет.",
+            "Ты делаешь этот мир лучше, просто существуя в нём.",
+            "В твоих глазах я всегда нахожу свой дом.",
+            "Ты — самая красивая мелодия в моей жизни.",
+            "С тобой даже обычный день становится праздником.",
+            "Твоя нежность — это то, что я ценю больше всего.",
+            "Ты — воплощение всего самого светлого, что есть во вселенной.",
+            "Каждый день с тобой — это подарок, который я не перестаю открывать.",
+            "Твоя душа настолько прекрасна, что я теряю дар речи.",
+            "Ты — мой якорь и мои крылья одновременно.",
+            "Твоя энергия заряжает меня на целый день.",
+            "Ты удивительно точно знаешь, как меня поддержать.",
+            "Твой смех — это музыка, которую я хочу слышать вечно.",
+            "Ты — моя самая любимая мысль с утра до ночи.",
+            "С тобой я чувствую себя самым счастливым человеком на земле.",
+            "Ты — лучший собеседник, которого я когда-либо знал.",
+            "Твоя красота не имеет границ, она во всём: в жестах, словах, взгляде.",
+            "Ты — моя самая большая и самая светлая любовь.",
+            "Я люблю твою страсть к жизни — она заразительна!",
+            "Ты — моя любимая загадка, которую я хочу разгадывать вечно.",
+            "Твоя забота делает меня лучше каждый день.",
+            "Ты — человек, ради которого я хочу становиться лучшей версией себя.",
+            "В твоих объятиях я чувствую себя в полной безопасности.",
+            "Ты — моя самая счастливая случайность.",
+            "Я люблю, как ты смеёшься над моими шутками — даже над самыми глупыми.",
+            "Ты — невероятная! Это слово слишком слабое для тебя.",
+            "Твоя внутренняя сила вдохновляет меня.",
+            "Ты умеешь видеть красоту там, где другие её не замечают.",
+            "Ты — моя путеводная звезда.",
+            "С тобой я научился любить жизнь по-настоящему.",
+            "Ты — моя любимая картина, которую я могу рассматривать бесконечно.",
+            "Твои глаза светятся таким теплом, что согревают меня изнутри.",
+            "Ты — мое вдохновение, моя муза, мой воздух.",
+            "Я люблю каждую твою маленькую привычку.",
+            "Ты — самая добрая душа, которую я встретил в своей жизни.",
+            "С тобой я чувствую себя живым.",
+            "Ты — мой самый лучший подарок судьбы.",
+            "Твоя улыбка способна исцелить любую грусть.",
+            "Ты — человек, с которым я хочу прожить все свои жизни.",
+            "Я люблю тебя за то, что ты есть. Без условий и причин."
+        ];
+
+        let firstComplimentShown = false;
+        const display = document.getElementById('complimentDisplay');
+        const newBtn = document.getElementById('newComplimentBtn');
+        const saveBtn = document.getElementById('saveComplimentBtn');
+        const notification = document.getElementById('emailNotification');
+        let currentCompliment = '';
+
+        function showRandomCompliment() {
+            display.classList.add('fade');
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * compliments.length);
+                currentCompliment = compliments[randomIndex];
+                display.textContent = `«${currentCompliment}»`;
+                display.classList.remove('fade');
+            }, 300);
+        }
+
+        newBtn.addEventListener('click', showRandomCompliment);
+
+        // ============================================================
+        // ВАШИ ДАННЫЕ EMAILJS (вставьте свои ID)
+        // ============================================================
+        const YOUR_PUBLIC_KEY = "4bmZ9-8D4VBOxEGdR";
+        const YOUR_SERVICE_ID = "service_gkwzvka";
+        const YOUR_TEMPLATE_ID = "template_c380x21";
+
+        // Подключаем EmailJS
+        (function() {
+            emailjs.init(YOUR_PUBLIC_KEY);
+        })();
+
+        saveBtn.addEventListener('click', function() {
+            if (!currentCompliment) {
+                notification.textContent = '💡 Сначала получи комплимент!';
+                notification.className = 'show';
+                setTimeout(() => { notification.className = ''; }, 2500);
+                return;
+            }
+
+            // Если ID не заменены — показываем подсказку
+            if (YOUR_SERVICE_ID === "service_??????" || YOUR_TEMPLATE_ID === "template_??????") {
+                notification.textContent = '⚠️ Сначала настрой EmailJS (вставь Service ID и Template ID)';
+                notification.className = 'show';
+                setTimeout(() => { notification.className = ''; }, 4000);
+                return;
+            }
+
+            const params = {
+                compliment: currentCompliment
+            };
+
+            emailjs.send(YOUR_SERVICE_ID, YOUR_TEMPLATE_ID, params)
+                .then(() => {
+                    notification.textContent = '✅ Комплимент отправлен на почту!';
+                    notification.className = 'show';
+                    setTimeout(() => { notification.className = ''; }, 3000);
+                })
+                .catch((error) => {
+                    console.error('Ошибка EmailJS:', error);
+                    notification.textContent = '❌ Не удалось отправить. Попробуй позже.';
+                    notification.className = 'show';
+                    setTimeout(() => { notification.className = ''; }, 3000);
+                });
+        });
+
+        // ============================================================
+        // 4. 100 ПРИЧИН
+        // ============================================================
+        const allReasons = [
+            "За твою улыбку, которая освещает мой день",
+            "За то, как ты смеёшься над моими дурацкими шутками",
+            "За твои глаза, в которых я тону каждый день",
+            "За то, что ты всегда веришь в меня",
+            "За твою нежность, которая согревает меня",
+            "За то, как ты вкусно готовишь (всю еду твою)",
+            "За твою поддержку, когда мне тяжело",
+            "За то, что ты самая красивая даже без макияжа",
+            "За то, как ты забавно пристаешь ко мне по утрам",
+            "За то, что ты всегда знаешь, что мне нужно",
+            "За твою страсть к путешествиям и приключениям",
+            "За то, как ты радуешься мелочам",
+            "За то, что ты не боишься быть уязвимой рядом со мной",
+            "За твой голос, который я могу слушать вечно",
+            "За то, что ты помнишь все мои любимые вещи",
+            "За твою заботу о моей семье",
+            "За то, как ты танцуешь, когда никто не видит",
+            "За твою силу духа и стойкость",
+            "За то, что ты выбрала именно меня",
+            "За твоё терпение к моим недостаткам",
+            "За твои объятия, в которых я чувствую себя дома",
+            "За то, что ты умеешь слушать и слышать",
+            "За твой вкус (и не только в одежде)",
+            "За то, что ты всегда находишь время для нас",
+            "За то, как ты светишься, когда я прихожу",
+            "За твою честность и искренность",
+            "За то, что ты умеешь прощать",
+            "За твои утренние сонные фото",
+            "За то, как ты смешно ругаешься на непослушные вещи",
+            "За твою способность делать мир лучше просто своим существованием",
+            "За то, что ты пишешь мне прикольные сообщения по ночам",
+            "За то, что ты любишь животных так же, как и я",
+            "За твою удивительную интуицию",
+            "За то, как ты улыбаешься своим мыслям",
+            "За то, что ты никогда не сдаёшься",
+            "За твои длинные волосы, в которые я хочу запутаться",
+            "За то, что ты всегда выглядишь стильно",
+            "За твою любовь к книгам и знаниям",
+            "За то, как ты поёшь (я люблю слушать)",
+            "За то, что ты заботишься о своём здоровье",
+            "За твою способность превращать обычный день в праздник",
+            "За то, что ты строишь со мной планы на будущее",
+            "За твои милые привычки, которые я подмечаю",
+            "За то, что ты принимаешь меня таким, какой я есть",
+            "За твои слёзы, когда ты переживаешь за меня",
+            "За то, что ты всегда на моей стороне",
+            "За твой аромат, который сводит меня с ума",
+            "За то, как ты заправляешь кровать по утрам",
+            "За то, что ты умеешь удивлять",
+            "За твой оптимизм, даже в плохие дни",
+            "За то, что ты научила меня любить по-настоящему",
+            "За твои мечты, которые мы воплотим вместе",
+            "За то, как ты общаешься с моими родными",
+            "За твою страсть к своему делу",
+            "За то, что ты всегда помнишь наши даты",
+            "За твою уютную квартиру, в которой я счастлив",
+            "За то, что ты умеешь успокоить меня одним словом",
+            "За твои смешные видео, которые ты мне отправляешь",
+            "За то, что ты хочешь построить со мной семью",
+            "За твою любовь к чаям по утрам",
+            "За то, как ты морщишь нос, когда злишься",
+            "За то, что ты самая понимающая девушка на свете",
+            "За твою уникальную способность делать меня счастливым",
+            "За то, что мы — это мы ❤️",
+            "За твои руки, которые всегда тянутся ко мне",
+            "За то, как ты смотришь на меня влюблёнными глазами",
+            "За твою мудрость и житейский опыт",
+            "За то, что ты делаешь каждый мой день особенным",
+            "За твою энергию, которая заряжает меня",
+            "За то, что ты есть у меня",
+            "За твои бесконечные идеи для свиданий",
+            "За то, что ты любишь меня даже с моими тараканами",
+            "За твою красоту, которая не тускнеет со временем",
+            "За то, что ты всегда готова прийти на помощь",
+            "За твои вкусные ужины при свечах",
+            "За то, как ты улыбаешься во сне",
+            "За то, что ты — моя муза",
+            "За твою преданность и верность",
+            "За то, что ты готова слушать мои идеи часами",
+            "За твои комплименты, которые я запоминаю навсегда",
+            "За то, что ты умеешь прощать мои ошибки",
+            "За твои глаза, которые сияют, когда я рядом",
+            "За то, что ты — моя лучшая подруга и любимая девушка в одном лице",
+            "За твою лёгкость и жизнерадостность",
+            "За то, что ты веришь в нашу любовь",
+            "За твой смех, который я хочу слышать каждый день",
+            "За то, как ты корчишь рожицы, когда я фоткаю",
+            "За твою любовь к пицце и бургеру",
+            "За то, что ты всегда находишь мои потерянные вещи",
+            "За твою способность делать из ничего праздник",
+            "За то, что ты — моя самая большая ценность",
+            "За твою доброту к окружающим",
+            "За то, что ты не перестаёшь меня удивлять",
+            "За твою фотографическую память на наши моменты",
+            "За то, что ты всегда рядом, когда я просыпаюсь",
+            "За твою способность светиться изнутри",
+            "За то, что ты научила меня ценить каждый момент",
+            "За твои тихие вечера, которые мы проводим вместе",
+            "За то, что ты — моя вторая половинка",
+            "За то, что я могу быть собой рядом с тобой",
+            "За то, что ты — самое лучшее, что случилось в моей жизни",
+            "За то, что я любожаю тебя бесконечно в бесконечности во всех мирах и вселенных ❤️"
+        ];
+
+        const reasonsList = document.getElementById('reasonsList');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        let shownCount = 0;
+        const step = 10;
+
+        function renderReasons(count) {
+            for (let i = shownCount; i < Math.min(count, allReasons.length); i++) {
+                const div = document.createElement('div');
+                div.className = 'reason-item';
+                div.innerHTML = `<span>${i + 1}.</span> ${allReasons[i]}`;
+                div.style.animationDelay = (i * 0.03) + 's';
+                reasonsList.appendChild(div);
+            }
+            shownCount = Math.min(count, allReasons.length);
+            if (shownCount >= allReasons.length) {
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.textContent = '❤️ Все 100 причин показаны ❤️';
+            }
+        }
+
+        loadMoreBtn.addEventListener('click', function() {
+            renderReasons(shownCount + step);
+        });
+
+        let reasonsLoaded = false;
+        const observer = new MutationObserver(() => {
+            if (!reasonsLoaded && screen2.classList.contains('show')) {
+                reasonsLoaded = true;
+                renderReasons(10);
+            }
+        });
+        observer.observe(screen2, { attributes: true, attributeFilter: ['class'] });
+
+        // ============================================================
+        // 5. ФОНОВЫЕ СЕРДЕЧКИ
+        // ============================================================
+        const floatingContainer = document.getElementById('floatingHearts');
+        for (let i = 0; i < 15; i++) {
+            const fh = document.createElement('div');
+            fh.className = 'floating-heart';
+            fh.textContent = ['❤️', '💖', '💗', '♥️'][Math.floor(Math.random() * 4)];
+            fh.style.left = Math.random() * 95 + '%';
+            fh.style.fontSize = (10 + Math.random() * 20) + 'px';
+            fh.style.animationDuration = (6 + Math.random() * 8) + 's';
+            fh.style.animationDelay = (Math.random() * 10) + 's';
+            floatingContainer.appendChild(fh);
+        }
+
+        console.log('❤️ Сайт с генератором комплиментов и EmailJS готов!');
+    </script>
+
+</body>
+</html>
