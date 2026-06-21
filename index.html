@@ -399,6 +399,8 @@
         <button id="loadMoreBtn">Показать ещё 10</button>
     </div>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
     <script>
         // ============================================================
         // 1. ВЗРЫВ СЕРДЕЧЕК
@@ -454,6 +456,11 @@
                 if (!firstComplimentShown) {
                     showRandomCompliment();
                     firstComplimentShown = true;
+                }
+                // Загружаем причины при переходе
+                if (!reasonsLoaded) {
+                    reasonsLoaded = true;
+                    renderReasons(10);
                 }
             }, 500);
         });
@@ -524,7 +531,7 @@
         newBtn.addEventListener('click', showRandomCompliment);
 
         // ============================================================
-        // ВАШИ ДАННЫЕ EMAILJS (вставьте свои ID)
+        // ВАШИ ДАННЫЕ EMAILJS
         // ============================================================
         const YOUR_PUBLIC_KEY = "4bmZ9-8D4VBOxEGdR";
         const YOUR_SERVICE_ID = "service_gkwzvka";
@@ -540,14 +547,6 @@
                 notification.textContent = '💡 Сначала получи комплимент!';
                 notification.className = 'show';
                 setTimeout(() => { notification.className = ''; }, 2500);
-                return;
-            }
-
-            // Если ID не заменены — показываем подсказку
-            if (YOUR_SERVICE_ID === "service_??????" || YOUR_TEMPLATE_ID === "template_??????") {
-                notification.textContent = '⚠️ Сначала настрой EmailJS (вставь Service ID и Template ID)';
-                notification.className = 'show';
-                setTimeout(() => { notification.className = ''; }, 4000);
                 return;
             }
 
@@ -570,7 +569,7 @@
         });
 
         // ============================================================
-        // 4. 100 ПРИЧИН
+        // 4. 100 ПРИЧИН (исправленная версия)
         // ============================================================
         const allReasons = [
             "За твою улыбку, которая освещает мой день",
@@ -681,15 +680,18 @@
         const loadMoreBtn = document.getElementById('loadMoreBtn');
         let shownCount = 0;
         const step = 10;
+        let reasonsLoaded = false;
 
         function renderReasons(count) {
+            const fragment = document.createDocumentFragment();
             for (let i = shownCount; i < Math.min(count, allReasons.length); i++) {
                 const div = document.createElement('div');
                 div.className = 'reason-item';
                 div.innerHTML = `<span>${i + 1}.</span> ${allReasons[i]}`;
                 div.style.animationDelay = (i * 0.03) + 's';
-                reasonsList.appendChild(div);
+                fragment.appendChild(div);
             }
+            reasonsList.appendChild(fragment);
             shownCount = Math.min(count, allReasons.length);
             if (shownCount >= allReasons.length) {
                 loadMoreBtn.disabled = true;
@@ -700,15 +702,6 @@
         loadMoreBtn.addEventListener('click', function() {
             renderReasons(shownCount + step);
         });
-
-        let reasonsLoaded = false;
-        const observer = new MutationObserver(() => {
-            if (!reasonsLoaded && screen2.classList.contains('show')) {
-                reasonsLoaded = true;
-                renderReasons(10);
-            }
-        });
-        observer.observe(screen2, { attributes: true, attributeFilter: ['class'] });
 
         // ============================================================
         // 5. ФОНОВЫЕ СЕРДЕЧКИ
